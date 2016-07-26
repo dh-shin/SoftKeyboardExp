@@ -55,6 +55,11 @@ namespace OPTI_Experiment
             dt.Interval = new TimeSpan(0, 0, 0, 0, 1);  
         }
 
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            WindowStyleHelper.RemoveIcon(this);
+        }
+
         public void ApplyInput(String input)
         {
             mediaPlayer_tick.Stop();
