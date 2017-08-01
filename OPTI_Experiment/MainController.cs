@@ -24,7 +24,7 @@ namespace OPTI_Experiment
 
         public void SendingInput(String input)
         {
-            _MainWindow.ApplyInput(input);
+            _MainWindow.ApplyKeyStrokeInput(input);
         }
     }
 }

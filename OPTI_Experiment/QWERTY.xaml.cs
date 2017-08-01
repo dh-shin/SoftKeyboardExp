@@ -29,7 +29,6 @@ namespace OPTI_Experiment
         {
             Button button = (Button)sender;
             String currChar = button.Content.ToString();
-            //MessageBox.Show("Input : " + currChar, "QWERTY vs OPTI");
             MainController.Instance.SendingInput(currChar);
         }
     }

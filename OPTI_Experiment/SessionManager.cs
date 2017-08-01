@@ -11,15 +11,15 @@ namespace OPTI_Experiment
     {
         public static SessionManager Instance { get; private set; }
 
-        public List<String> Samples = new List<String>();
+        public List<String> SamplePhrases = new List<String>();
 
-        public readonly TimeSpan termFallBackTime = new TimeSpan(0, 0, 0, 11, 0); // 처음 준비 시간
-        public readonly TimeSpan mainFallBackTime = new TimeSpan(0, 0, 3, 1, 0); // Task 수행 시간
-        public readonly TimeSpan restFallBackTime = new TimeSpan(0, 0, 1, 1, 0); // 중간 휴식 시간
+        public readonly TimeSpan ReadyTimeSpan = new TimeSpan(0, 0, 0, 11, 0); // 처음 준비 시간
+        public readonly TimeSpan TaskTimeSpan = new TimeSpan(0, 0, 5, 1, 0); // Task 수행 시간
+        public readonly TimeSpan RestTimeSpan = new TimeSpan(0, 0, 1, 1, 0); // 중간 휴식 시간
 
-        public Int32 WordNums;
-        public Int32 ErrorWordNums;
-        public Double WordPerMinute;
+        public Int32 LetterNum;
+        public Int32 ErrorLetterNum;
+        public Double LetterPerMinute;
 
         public List<Int32> UsedIndices;
 
@@ -40,22 +40,22 @@ namespace OPTI_Experiment
             {
                 line = line.ToUpper();
                 Console.WriteLine(line);
-                Samples.Add(line);
+                SamplePhrases.Add(line);
             }
             file.Close();
         }
 
         public void InitializeSession()
         {
-            WordNums = 0;
-            ErrorWordNums = 0;
+            LetterNum = 0;
+            ErrorLetterNum = 0;
             UsedIndices = new List<Int32>();
         }
 
         public String GetSamplePhrase()
         {
             Int32 min = 0;
-            Int32 max = Samples.Count - 1;
+            Int32 max = SamplePhrases.Count - 1;
             Random rand = new Random();
 
             Int32 pick;
@@ -66,19 +66,19 @@ namespace OPTI_Experiment
             while (UsedIndices.Contains(pick) == true);
 
             UsedIndices.Add(pick);
-            return Samples[pick];
+            return SamplePhrases[pick];
         }
 
         public Double GetWordPerMinute()
         {
-            Double res = WordNums / (Double)mainFallBackTime.Minutes;
-            return Math.Round(res, 2);
+            Double res = LetterNum / (Double)TaskTimeSpan.Minutes;
+            return Math.Round(res / 4, 2);
         }
 
         public Double GetErrorRate()
         {
-            Double res = ErrorWordNums / (Double)WordNums;
-            return Math.Round(res, 2);
+            Double res = ErrorLetterNum / (Double)LetterNum;
+            return Math.Round(res * 100, 1);
         }
     }
 }

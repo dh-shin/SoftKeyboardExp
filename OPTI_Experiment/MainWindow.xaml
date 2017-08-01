@@ -4,66 +4,70 @@
         xmlns:my="clr-namespace:OPTI_Experiment"
         Title="QWERTY vs OPTI" Height="700" Width="1050">
     <Grid>
-
-        <Label x:Name="InfoText" Content="READY" FontSize="60"
-               Visibility="Collapsed"
-               HorizontalAlignment="Left" Margin="250,0,0,0" VerticalAlignment="Center"/>
-
-        <Grid Width="800" Height="420" HorizontalAlignment="Left" VerticalAlignment="Bottom">
-            <my:QWERTY x:Name="QWERTY_Control" Width="700" Height="280" Visibility="Collapsed"></my:QWERTY>
-            <my:OPTI x:Name="OPTI_Control" Width="490" Height="350" Visibility="Collapsed"></my:OPTI>
-        </Grid>
-
-        <Button Content="QWERTY" Click="QWERTY_Practice_Activate"
-                Width="160" Height="30"
-                HorizontalAlignment="Right" Margin="0,35,10,0" VerticalAlignment="Top" />
-
-        <Button Content="OPTI" Click="OPTI_Practice_Activate" 
-                Width="160" Height="30"
-                HorizontalAlignment="Right" Margin="0,70,10,0" VerticalAlignment="Top" />
-
-        <Button Content="Session Start" Click="Session_Start" 
-        	Width="160" Height="30"
-        	HorizontalAlignment="Right" Margin="0,150,10,0" VerticalAlignment="Top" />
-
-        <Button Content="Session Stop" Click="Session_Stop" 
-        	Width="160" Height="30"
-        	HorizontalAlignment="Right" Margin="0,185,10,0" VerticalAlignment="Top" />
-
-        <Label x:Name="StopWatchLabel" Content="00:00" FontSize="30"
-               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-               HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,313" 
-               Width="160" Height="43"/>
-
-        <RadioButton Content="QWERTY First" GroupName="Layout_Group" IsChecked="True"
-                     Checked="Layout_First_Checked" Tag="0"
-                     HorizontalAlignment="Right" Margin="0,249,77,0" VerticalAlignment="Top"/>
-
-        <RadioButton Content="OPTI First" GroupName="Layout_Group"
-                     Click="Layout_First_Checked" Tag="1"
-                     HorizontalAlignment="Right" Margin="0,269,98,0" VerticalAlignment="Top"/>
-
-        <TextBlock x:Name="TaskText" Text="" 
-                   FontSize="24" TextWrapping="Wrap" 
-                   HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,35,0,0"/>
-
-        <TextBlock x:Name="InputText" Text="" 
-                   FontSize="24" TextWrapping="Wrap" 
-                   HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,74,0,0"/>
-
-        <Label Content="Records (wpm)" FontSize="22"
-               HorizontalAlignment="Right" Margin="0,404,10,0" VerticalAlignment="Top"/>
-        <Label x:Name="QWERTYRecord" Content="QWERTY : " FontSize="16"
-               HorizontalAlignment="Right" Margin="0,448,10,0" VerticalAlignment="Top"/>
-        <Label x:Name="OPTIRecord" Content="OPTI : " FontSize="16"
-               HorizontalAlignment="Right" Margin="0,484,10,0" VerticalAlignment="Top"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="180"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
         
-        <Label Content="Error Rate (%)" FontSize="22"
-        	HorizontalAlignment="Right" Margin="0,520,10,0" VerticalAlignment="Top"/>
-        <Label x:Name="OPTIError" Content="OPTI : " FontSize="16"
-        	HorizontalAlignment="Right" Margin="0,600,10,0" VerticalAlignment="Top"/>
-        <Label x:Name="QWERTYError" Content="QWERTY : " FontSize="16"
-        	HorizontalAlignment="Right" Margin="0,564,10,0" VerticalAlignment="Top"/>
+        <Grid Grid.Column="0">
+            <Label x:Name="InfoText" Content="READY" 
+                   FontSize="60" Visibility="Collapsed"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="TaskText" Text="" 
+                       FontSize="24" TextWrapping="Wrap"
+                       HorizontalAlignment="Center" Margin="10 0 0 0"/>
+                
+                <TextBlock x:Name="InputText" Text="" 
+                       FontSize="24" TextWrapping="Wrap" 
+                       Width="{Binding ElementName=TaskText, Path=ActualWidth}"
+                       HorizontalAlignment="Center" Margin="10 10 0 10"/>
+                
+                <Grid Height="420" HorizontalAlignment="Center">
+                    <my:QWERTY x:Name="QWERTY_Control" Width="700" Height="280" Margin="0 20 0 0" 
+                               Visibility="Collapsed" VerticalAlignment="Top"></my:QWERTY>
+                    <my:OPTI x:Name="OPTI_Control" Width="490" Height="350" Margin="0 20 0 0" 
+                             Visibility="Collapsed" VerticalAlignment="Top"></my:OPTI>
+                </Grid>
+            </StackPanel>
+        </Grid>
+        
+        <StackPanel Grid.Column="1" Margin="10 0">
+            <Label Content="Keyboard Layout Test" FontWeight="Bold"
+                   Margin="0 10 0 0"></Label>
+            <Button x:Name="QWERTY_Practice" Content="QWERTY" Click="QWERTY_Practice_Activate"
+                    Height="30" Margin="0 0 0 10"/>
+            <Button x:Name="OPTI_Practice" Content="OPTI" Click="OPTI_Practice_Activate" 
+                    Height="30" Margin="0 0 0 10"/>
+            <Button x:Name="Clear_Practice" Content="Clear" Click="Clear_Practice_Activate"
+                    Height="30" Margin="0 0 0 10"></Button>
 
+            <Label Content="Main Task" FontWeight="Bold" Margin="0 20 0 0"></Label>
+            <Button Content="Session Start" Click="Session_Start" 
+                    Height="30" Margin="0 0 0 10"/>
+
+            <Button Content="Session Stop" Click="Session_Stop" 
+                    Height="30" Margin="0 0 0 10"/>
+            
+            <RadioButton Content="QWERTY First" GroupName="Layout_Group" IsChecked="True"
+                     Checked="Layout_First_Checked" Tag="0"
+                     Margin="0 0 0 0"/>
+            <RadioButton Content="OPTI First" GroupName="Layout_Group"
+                     Click="Layout_First_Checked" Tag="1"
+                     Margin="0 5 0 0"/>
+
+            <Label Content="Time Remaining" Margin="0 40 0 0" HorizontalAlignment="Center"></Label>
+            <Label x:Name="StopWatchLabel" Content="00:00" 
+                   FontSize="30" Height="45" Margin="0 -12 0 0"
+                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+
+            <Label Content="Entry Speed (wpm)" FontSize="15" FontWeight="Bold" Margin="0 50 0 0"/>
+            <Label x:Name="QWERTYRecord" Content="QWERTY : " />
+            <Label x:Name="OPTIRecord" Content="OPTI : " />
+
+            <Label Content="Error Rate (%)" FontSize="15" FontWeight="Bold" Margin="0 10 0 0"/>
+            <Label x:Name="QWERTYError" Content="QWERTY : " />
+            <Label x:Name="OPTIError" Content="OPTI : " />
+        </StackPanel>
     </Grid>
 </Window>

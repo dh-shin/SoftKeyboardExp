@@ -22,21 +22,20 @@ namespace OPTI_Experiment
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Boolean IsQWERTYFirst = true;
-        private Boolean IsOPTIGo;
+        private Boolean IsQWERTY_First = true;
+        private Boolean IsOPTI_Turn;
 
-        private DispatcherTimer dt = new DispatcherTimer();
-        private Stopwatch sw = new Stopwatch();
-        private String currentTime = String.Empty;
-        
-        private TimeSpan currFallBackTime;
+        private DispatcherTimer TaskTimer = new DispatcherTimer();
+        private Stopwatch TaskStopWatch = new Stopwatch();
+        private String CurrTimeLabel = String.Empty;
+        private TimeSpan CurrTimeSpan;
 
-        private MediaPlayer mediaPlayer_tick = new MediaPlayer();
-        private MediaPlayer mediaPlayer_beep = new MediaPlayer();
+        private Int32 Stage = 0;
+        private Int32 CurrInputIndex = 0;
+        private String CurrPhrase;
 
-        private Int32 stage = 0;
-        private Int32 currInputIndex = 0;
-        private String currPhrase;
+        private MediaPlayer MP_tick;
+        private MediaPlayer MP_beep;
 
         public MainWindow()
         {
@@ -47,12 +46,19 @@ namespace OPTI_Experiment
             MainController.Instance._QWERTY = QWERTY_Control;
 
             SessionManager.Instance.ReadSamples();
+            InitializeMediaPlayers();
 
-            mediaPlayer_tick.Open(new Uri("./tick.mp3", UriKind.Relative));
-            mediaPlayer_beep.Open(new Uri("./beep.mp3", UriKind.Relative));
+            TaskTimer.Tick += new EventHandler(TaskTimer_Tick);
+            TaskTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+        }
 
-            dt.Tick += new EventHandler(dt_Tick);
-            dt.Interval = new TimeSpan(0, 0, 0, 0, 1);  
+        private void InitializeMediaPlayers()
+        {
+            MP_tick = new MediaPlayer();
+            MP_beep = new MediaPlayer();
+
+            MP_tick.Open(new Uri("./tick.mp3", UriKind.Relative));
+            MP_beep.Open(new Uri("./beep.mp3", UriKind.Relative));
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -60,86 +66,95 @@ namespace OPTI_Experiment
             WindowStyleHelper.RemoveIcon(this);
         }
 
-        public void ApplyInput(String input)
+        public void ApplyKeyStrokeInput(String input)
         {
-            mediaPlayer_tick.Stop();
-            mediaPlayer_beep.Stop();
-            mediaPlayer_tick.Position = TimeSpan.Zero;
-            mediaPlayer_beep.Position = TimeSpan.Zero;
+            MP_tick.Stop();
+            MP_beep.Stop();
+            MP_tick.Position = TimeSpan.Zero;
+            MP_beep.Position = TimeSpan.Zero;
 
-            if (input == "SPACE") input = " ";
+            if (input == "SPACE") 
+                input = " ";
             InputText.Text += input;
 
-            // 틀릴 경우 처리
-            String answer = currPhrase.Substring(currInputIndex, 1);
-            if (input != answer)
+            // 준비 상태이면 글자 체크 및 수치 계산 등을 하지 않음
+            if (Stage == 0)
+                return;
+
+            String answer = CurrPhrase.Substring(CurrInputIndex, 1);
+            if (input != answer) 
             {
-                SessionManager.Instance.ErrorWordNums++;
-                mediaPlayer_beep.Play();
+                // 틀린 글자 입력시
+                SessionManager.Instance.ErrorLetterNum++;
+                MP_beep.Play();
             }
-            else
+            else 
             {
-                mediaPlayer_tick.Play();
+                // 알맞은 글자 입력시
+                MP_tick.Play();
             }
 
-            SessionManager.Instance.WordNums++;
-            currInputIndex++;
+            SessionManager.Instance.LetterNum++;
+            CurrInputIndex++;
 
             if (InputText.Text.Length == TaskText.Text.Length)
             {
-                currPhrase = SessionManager.Instance.GetSamplePhrase();
+                CurrPhrase = SessionManager.Instance.GetSamplePhrase();
                 InputText.Text = "";
-                currInputIndex = 0;
+                CurrInputIndex = 0;
             }
 
-            RefreshTastText();
+            RefreshTaskPhrase();
         }
 
-        public void RefreshTastText()
+        public void RefreshTaskPhrase()
         {
-            String first = currPhrase.Substring(0, currInputIndex);
-            String highlight = currPhrase.Substring(currInputIndex, 1);
+            String first = CurrPhrase.Substring(0, CurrInputIndex);
+            String highlight = CurrPhrase.Substring(CurrInputIndex, 1);
             if (highlight == " ") highlight = "_";
-            String last = currPhrase.Substring(currInputIndex + 1, currPhrase.Length - currInputIndex - 1);
+            String last = CurrPhrase.Substring(CurrInputIndex + 1, CurrPhrase.Length - CurrInputIndex - 1);
             TaskText.Inlines.Clear();
             TaskText.Inlines.Add(new Run(first));
             Run highlightRun = new Run();
             highlightRun.Foreground = Brushes.Red;
             highlightRun.Text = highlight;
+            highlightRun.FontWeight = FontWeights.Bold;
             TaskText.Inlines.Add(highlightRun);
             TaskText.Inlines.Add(new Run(last));
         }
 
-        public void InitializeStage()
+        public void RefreshStage()
         {
-            if (stage == 0) // READY
+            if (Stage == 0) // READY
             {
                 QWERTYRecord.Content = "QWERTY : ";
                 OPTIRecord.Content = "OPTI : ";
                 QWERTYError.Content = "QWERTY : ";
                 OPTIError.Content = "OPTI : ";
 
+                InputText.Text = "";
+
                 InfoText.Visibility = Visibility.Visible;
-                currFallBackTime = SessionManager.Instance.termFallBackTime;
+                CurrTimeSpan = SessionManager.Instance.ReadyTimeSpan;
             }
-            else if (stage == 1) // TASK 1
+            else if (Stage == 1) // TASK 1
             {
                 InfoText.Visibility = Visibility.Collapsed;
                 InitializeKeyBoardLayout(true);
                 SessionManager.Instance.InitializeSession();
-                currInputIndex = 0;
-                currPhrase = SessionManager.Instance.GetSamplePhrase();
-                RefreshTastText();
-                currFallBackTime = SessionManager.Instance.mainFallBackTime;
+                CurrInputIndex = 0;
+                CurrPhrase = SessionManager.Instance.GetSamplePhrase();
+                RefreshTaskPhrase();
+                CurrTimeSpan = SessionManager.Instance.TaskTimeSpan;
                 
-                sw.Restart();
+                TaskStopWatch.Restart();
             }
-            else if (stage == 2) // REST
+            else if (Stage == 2) // REST
             {
                 Double record = SessionManager.Instance.GetWordPerMinute();
                 Double record2 = SessionManager.Instance.GetErrorRate();
-                MessageBox.Show("Result :\nWPM: " + record + " / Error Rate : " + record2, "QWERTY vs OPTI");
-                if (IsOPTIGo == true)
+                MessageBox.Show("Entry Speed: " + record + " wpm\n" + "Error Rate : " + record2 + "%", "Session Result");
+                if (IsOPTI_Turn == true)
                 {
                     OPTIRecord.Content = "OPTI : " + record.ToString();
                     OPTIError.Content = "OPTI : " + record2.ToString();
@@ -154,28 +169,28 @@ namespace OPTI_Experiment
                 ClearKeyBoardLayout();
                 TaskText.Text = "";
                 InputText.Text = "";
-                currFallBackTime = SessionManager.Instance.restFallBackTime;
+                CurrTimeSpan = SessionManager.Instance.RestTimeSpan;
 
-                sw.Restart();
+                TaskStopWatch.Restart();
             }
-            else if (stage == 3) // TASK 2
+            else if (Stage == 3) // TASK 2
             {
                 InfoText.Visibility = Visibility.Collapsed;
                 InitializeKeyBoardLayout(false);
                 SessionManager.Instance.InitializeSession();
-                currInputIndex = 0;
-                currPhrase = SessionManager.Instance.GetSamplePhrase();
-                RefreshTastText();
-                currFallBackTime = SessionManager.Instance.mainFallBackTime;
+                CurrInputIndex = 0;
+                CurrPhrase = SessionManager.Instance.GetSamplePhrase();
+                RefreshTaskPhrase();
+                CurrTimeSpan = SessionManager.Instance.TaskTimeSpan;
 
-                sw.Restart();
+                TaskStopWatch.Restart();
             }
             else
             {
                 Double record = SessionManager.Instance.GetWordPerMinute();
                 Double record2 = SessionManager.Instance.GetErrorRate();
-                MessageBox.Show("Result :\nWPM: " + record + " / Error Rate : " + record2, "QWERTY vs OPTI");
-                if (IsOPTIGo == true)
+                MessageBox.Show("Entry Speed: " + record + " wpm\n" + "Error Rate : " + record2 + "%", "Session Result");
+                if (IsOPTI_Turn == true)
                 {
                     OPTIRecord.Content = "OPTI : " + record.ToString();
                     OPTIError.Content = "OPTI : " + record2.ToString();
@@ -190,40 +205,40 @@ namespace OPTI_Experiment
                 TaskText.Text = "";
                 InputText.Text = "";
 
-                sw.Stop();
+                TaskStopWatch.Stop();
             }
         }
 
-        private void dt_Tick(object sender, EventArgs e)
+        private void TaskTimer_Tick(object sender, EventArgs e)
         {
-            if (sw.IsRunning)
+            if (TaskStopWatch.IsRunning == true)
             {
-                TimeSpan ts = currFallBackTime - sw.Elapsed;
-                StopWatchLabel.Content = currentTime;
-                currentTime = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
+                TimeSpan ts = CurrTimeSpan - TaskStopWatch.Elapsed;
+                StopWatchLabel.Content = CurrTimeLabel;
+                CurrTimeLabel = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
 
-                if (currentTime == "00:00")
+                if (CurrTimeLabel == "00:00")
                 {
-                    InfoText.Content = "START!!!";
+                    InfoText.Content = "START!";
                 }
                 else
                 {
-                    InfoText.Content = "READY ( " + currentTime + " )";
+                    InfoText.Content = "READY ( " + CurrTimeLabel + " )";
                 }
 
                 if (ts.Ticks < 0)
                 {
-                    stage++;
-                    InitializeStage();
+                    Stage++;
+                    RefreshStage();
                 }
             }
         }
 
         private void InitializeKeyBoardLayout(Boolean isFirst)
         {
-            IsOPTIGo = IsQWERTYFirst ^ isFirst;
+            IsOPTI_Turn = IsQWERTY_First ^ isFirst;
 
-            if (IsOPTIGo == true)
+            if (IsOPTI_Turn == true)
             {
                 QWERTY_Control.Visibility = Visibility.Collapsed;
                 OPTI_Control.Visibility = Visibility.Visible;
@@ -253,28 +268,43 @@ namespace OPTI_Experiment
             OPTI_Control.Visibility = Visibility.Visible;
         }
 
+        private void Clear_Practice_Activate(object sender, RoutedEventArgs e)
+        {
+            InputText.Text = "";
+            ClearKeyBoardLayout();
+        }
+
         private void Session_Start(object sender, RoutedEventArgs e)
         {
-            sw.Start();
-            
-            stage = 0;
-            InitializeStage();
+            QWERTY_Practice.IsEnabled = false;
+            OPTI_Practice.IsEnabled = false;
+            Clear_Practice.IsEnabled = false;
 
-            dt.Start();
+            TaskStopWatch.Start();
+            
+            Stage = 0;
+            ClearKeyBoardLayout();
+            RefreshStage();
+
+            TaskTimer.Start();
         }
 
         private void Session_Stop(object sender, RoutedEventArgs e)
         {
-            if (sw.IsRunning)
+            if (TaskStopWatch.IsRunning)
             {
-                sw.Stop();
-                sw.Reset();
+                TaskStopWatch.Stop();
+                TaskStopWatch.Reset();
 
                 InfoText.Visibility = Visibility.Collapsed;
                 ClearKeyBoardLayout();
                 TaskText.Text = "";
                 InputText.Text = "";
             }
+
+            QWERTY_Practice.IsEnabled = true;
+            OPTI_Practice.IsEnabled = true;
+            Clear_Practice.IsEnabled = true;
         }
 
         private void Layout_First_Checked(object sender, RoutedEventArgs e)
@@ -283,12 +313,13 @@ namespace OPTI_Experiment
             String id = (String) rb.Tag;
             if (id == "0" || id == null)
             {
-                IsQWERTYFirst = true;
+                IsQWERTY_First = true;
             }
             else
             {
-                IsQWERTYFirst = false;
+                IsQWERTY_First = false;
             }
         }
+
     }
 }
