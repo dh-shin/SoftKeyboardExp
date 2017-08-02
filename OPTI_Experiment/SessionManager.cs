@@ -14,8 +14,8 @@ namespace OPTI_Experiment
         public List<String> SamplePhrases = new List<String>();
 
         public readonly TimeSpan ReadyTimeSpan = new TimeSpan(0, 0, 0, 11, 0); // 처음 준비 시간
-        public readonly TimeSpan TaskTimeSpan = new TimeSpan(0, 0, 0, 11, 0); // Task 수행 시간
-        public readonly TimeSpan RestTimeSpan = new TimeSpan(0, 0, 0, 11, 0); // 중간 휴식 시간
+        public readonly TimeSpan TaskTimeSpan = new TimeSpan(0, 0, 5, 1, 0); // Task 수행 시간
+        public readonly TimeSpan RestTimeSpan = new TimeSpan(0, 0, 1, 1, 0); // 중간 휴식 시간
 
         public Int32 LetterNum;
         public Int32 ErrorLetterNum;
