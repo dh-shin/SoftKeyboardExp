@@ -26,7 +26,7 @@ namespace OPTI_Experiment
         private Boolean IsOPTI_Turn;
 
         private DispatcherTimer TaskTimer = new DispatcherTimer();
-        private Stopwatch TaskStopWatch = new Stopwatch();
+        private Stopwatch TaskStopWatch;
         private String CurrTimeLabel = String.Empty;
         private TimeSpan CurrTimeSpan;
 
@@ -68,6 +68,10 @@ namespace OPTI_Experiment
 
         public void ApplyKeyStrokeInput(String input)
         {
+            // 준비 상태이면 글자 체크 및 수치 계산 등을 하지 않음
+            if (Stage == 0)
+                return;
+
             MP_tick.Stop();
             MP_beep.Stop();
             MP_tick.Position = TimeSpan.Zero;
@@ -76,10 +80,6 @@ namespace OPTI_Experiment
             if (input == "SPACE") 
                 input = " ";
             InputText.Text += input;
-
-            // 준비 상태이면 글자 체크 및 수치 계산 등을 하지 않음
-            if (Stage == 0)
-                return;
 
             String answer = CurrPhrase.Substring(CurrInputIndex, 1);
             if (input != answer) 
@@ -280,6 +280,7 @@ namespace OPTI_Experiment
             OPTI_Practice.IsEnabled = false;
             Clear_Practice.IsEnabled = false;
 
+            TaskStopWatch = new Stopwatch();
             TaskStopWatch.Start();
             
             Stage = 0;
