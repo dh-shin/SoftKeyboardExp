@@ -33,7 +33,7 @@
         </Grid>
         
         <StackPanel Grid.Column="1" Margin="10 0">
-            <Label Content="Keyboard Layout Test" FontWeight="Bold"
+            <Label Content="Soft Keyboard Layout" FontWeight="Bold"
                    Margin="0 10 0 0"></Label>
             <Button x:Name="QWERTY_Practice" Content="QWERTY" Click="QWERTY_Practice_Activate"
                     Height="30" Margin="0 0 0 10"/>

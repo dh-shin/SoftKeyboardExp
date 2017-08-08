@@ -56,7 +56,6 @@ namespace OPTI_Experiment
         {
             MP_tick = new MediaPlayer();
             MP_beep = new MediaPlayer();
-
             MP_tick.Open(new Uri("./tick.mp3", UriKind.Relative));
             MP_beep.Open(new Uri("./beep.mp3", UriKind.Relative));
         }
@@ -97,11 +96,13 @@ namespace OPTI_Experiment
             SessionManager.Instance.LetterNum++;
             CurrInputIndex++;
 
+            // 현재 문장을 모두 입력하였으면 새로운 문장을 불러온다.
             if (InputText.Text.Length == TaskText.Text.Length)
             {
                 CurrPhrase = SessionManager.Instance.GetSamplePhrase();
                 InputText.Text = "";
                 CurrInputIndex = 0;
+                InitializeMediaPlayers();
             }
 
             RefreshTaskPhrase();

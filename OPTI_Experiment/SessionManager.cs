@@ -16,7 +16,10 @@ namespace OPTI_Experiment
         public readonly TimeSpan ReadyTimeSpan = new TimeSpan(0, 0, 0, 11, 0); // 처음 준비 시간
         public readonly TimeSpan TaskTimeSpan = new TimeSpan(0, 0, 5, 1, 0); // Task 수행 시간
         public readonly TimeSpan RestTimeSpan = new TimeSpan(0, 0, 1, 1, 0); // 중간 휴식 시간
-
+        
+        
+        public static readonly Int32 LetterPerWord = 5; // WPM을 계산하기 위해 가정하는 단어당 문자 수
+        
         public Int32 LetterNum;
         public Int32 ErrorLetterNum;
         public Double LetterPerMinute;
@@ -77,7 +80,7 @@ namespace OPTI_Experiment
         public Double GetWordPerMinute()
         {
             Double res = LetterNum / (Double)TaskTimeSpan.Minutes;
-            return Math.Round(res / 4, 2);
+            return Math.Round(res / LetterPerWord, 2);
         }
 
         public Double GetErrorRate()
